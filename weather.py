@@ -2,9 +2,10 @@ import requests
 import os
 
 
-# .env API_TOKEN
-api_token = os.environ.get('API_TOKEN')
-bark_key = os.environ.get('BARK_KEY')
+# https://lbs.amap.com/
+api_token = ""
+# https://github.com/Finb/Bark
+bark_key = ""
 
 severe_weather_list = [
     "强风/劲风", "疾风", "大风", "烈风", "风暴", "狂爆风", "飓风", "热带风暴", "霾", "中度霾", "重度霾", "严重霾", "雷阵雨", "雷阵雨并伴有冰雹", "中雨", "大雨", "暴雨", "大暴雨", "特大暴雨", "强阵雨", "强雷阵雨", "极端降雨", "中雨-大雨", "大雨-暴雨", "暴雨-大暴雨", "大暴雨-特大暴雨", "雨雪天气", "雨夹雪", "阵雨夹雪", "冻雨", "雪", "阵雪", "小雪", "中雪", "大雪", "暴雪", "小雪 - 中雪", "中雪-大雪", "大雪-暴雪", "浮尘", "扬沙", "沙尘暴", "强沙尘暴", "龙卷风", "雾", "浓雾", "强浓雾", "轻雾", "大雾", "特强浓雾"
@@ -85,23 +86,16 @@ def severe_weather_alert(casts):
 
 
 def temperature_difference_alert(casts):
-    low_temp = 99
-    high_temp = 0
+    interval = 5
     try:
-        for cast in casts:
-            if int(cast['daytemp']) > high_temp:
-                high_temp = int(cast['daytemp'])
-
-            if int(cast['nighttemp']) < low_temp:
-                low_temp = int(cast['nighttemp'])
-
-        if high_temp - low_temp >= 3:
-            title = '温差预警'
-            content = '接下来可能出现较大温差: {}℃ ~ {}℃'.format(low_temp, high_temp)
+        if abs(int(casts[0]['daytemp']) - int(casts[1]['daytemp'])) > interval or abs(int(casts[0]['nighttemp']) - int(casts[1]['nighttemp'])) > interval:
+            title = '温差较大预警'
+            content = '日期: {} \n 白天气温: {}℃ \n 夜间气温: {}℃ \n'.format(
+                casts[1]['date'], casts[1]['daytemp'], casts[1]['nighttemp'])
             send_bark(title, content)
 
     except Exception as e:
-        send_bark('天气获取失败', '天气获取失败')
+        send_bark('天气获取失败', e)
 
 
 def main():
